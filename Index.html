@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Loop 3D</title>
+  <style>
+    :root {
+      --neon-purple: #a855f7;
+      --sunset-orange: #f97316;
+      --bg-dark: #020617;
+      --glass-bg: rgba(255, 255, 255, 0.05);
+      --glass-border: rgba(255, 255, 255, 0.1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: white;
+      height: 100vh;
+      overflow: hidden;
+      perspective: 1000px; 
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Ambient Background 3D */
+    .ambient-light {
+      position: absolute;
+      width: 300px; height: 300px;
+      border-radius: 50%;
+      filter: blur(100px);
+      z-index: -1;
+      animation: float 6s infinite alternate ease-in-out;
+    }
+    .purple-light { top: 10%; left: 10%; background: var(--neon-purple); }
+    .orange-light { bottom: 10%; right: 10%; background: var(--sunset-orange); }
+
+    @keyframes float {
+      0% { transform: translateZ(-200px) translateY(0); }
+      100% { transform: translateZ(100px) translateY(-50px); }
+    }
+
+    /* 3D Glass Container */
+    .app-container {
+      width: 100%;
+      max-width: 400px;
+      height: 90vh;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 40px;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.1s ease;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(168, 85, 247, 0.2);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .content-area {
+      flex: 1;
+      padding: 30px;
+      transform: translateZ(50px);
+    }
+
+    h1 {
+      font-size: 2rem;
+      background: linear-gradient(to right, var(--neon-purple), var(--sunset-orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 20px;
+      transform: translateZ(30px);
+    }
+
+    .card-3d {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      transform: translateZ(60px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .avatar-glow {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--neon-purple), var(--sunset-orange));
+      margin: 0 auto 15px;
+      box-shadow: 0 0 20px var(--neon-purple);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
+      50% { box-shadow: 0 0 40px rgba(249, 115, 22, 0.8); }
+      100% { box-shadow: 0 0 20px rgba(168, 85, 247, 0.5); }
+    }
+
+    .bottom-nav {
+      position: absolute;
+      bottom: 20px;
+      left: 20px; right: 20px;
+      height: 70px;
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(15px);
+      border-radius: 35px;
+      border: 1px solid var(--glass-border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      transform: translateZ(80px);
+    }
+
+    .nav-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: transparent;
+      border: none;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .nav-btn:hover { background: rgba(255,255,255,0.1); transform: scale(1.1) translateZ(20px); }
+
+    .cam-btn {
+      width: 60px; height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(to top right, var(--neon-purple), var(--sunset-orange));
+      border: 3px solid var(--bg-dark);
+      transform: translateY(-20px) translateZ(40px);
+      box-shadow: 0 10px 20px rgba(249, 115, 22, 0.4);
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ambient-light purple-light"></div>
+  <div class="ambient-light orange-light"></div>
+
+  <div class="app-container" id="appCard">
+    <div class="content-area">
+      <h1>Live Map</h1>
+      
+      <div class="card-3d">
+        <div class="avatar-glow"></div>
+        <h2>Satelit Terhubung</h2>
+        <p style="color: #94a3b8; margin-top: 10px; font-size: 14px;">Geser kursor atau ponsel untuk melihat efek 3D</p>
+      </div>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn">📍</button>
+      <button class="nav-btn">💬</button>
+      <button class="cam-btn" onclick="triggerHaptic()">📸</button>
+      <button class="nav-btn">📱</button>
+      <button class="nav-btn">👤</button>
+    </div>
+  </div>
+
+  <script>
+    const appCard = document.getElementById('appCard');
+
+    // Efek 3D Tilt mengikuti pergerakan Mouse (Desktop)
+    document.addEventListener('mousemove', (e) => {
+      let xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+      let yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+      appCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    // Reset posisi saat kursor keluar
+    document.addEventListener('mouseleave', () => {
+      appCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+    });
+
+    // Efek 3D menggunakan Gyroscope (Mobile Device)
+    if (window.DeviceOrientationEvent) {
+      window.addEventListener('deviceorientation', (e) => {
+        let tiltX = Math.min(Math.max(e.beta - 45, -20), 20);
+        let tiltY = Math.min(Math.max(e.gamma, -20), 20); 
+        appCard.style.transform = `rotateY(${tiltY}deg) rotateX(${-tiltX}deg)`;
+      });
+    }
+
+    // Fungsi simulasi Haptic Feedback
+    function triggerHaptic() {
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+      const btn = document.querySelector('.cam-btn');
+      btn.style.transform = 'translateY(-15px) translateZ(30px) scale(0.9)';
+      setTimeout(() => {
+        btn.style.transform = 'translateY(-20px) translateZ(40px) scale(1)';
+      }, 150);
+    }
+  </script>
+</body>
+</html>
